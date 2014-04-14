@@ -1,0 +1,146 @@
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/proc.h>
+#include <sys/module.h>
+#include <sys/sysent.h>
+#include <sys/kernel.h>
+#include <sys/systm.h>
+#include <sys/lock.h>
+#include <sys/mutex.h>
+
+/*
+int setProcessTickets(int pid, int tickets);
+int getProcessTickets(int pid); 
+int setSocialInfo(int pid, u_int64_t social_info);
+u_int64_t getSocialInfo(int pid);
+int setLotteryMode(int mode);
+int getLotteryMode(void); 
+*/
+
+
+
+/*
+    we are declaring all of the args structs for each 
+    of the 6 processes
+ */
+struct setProcessTickets_args
+{
+    int pid; 
+    int tickets;
+};
+
+struct getProcessTickets_args
+{
+    int pid; 
+};
+
+
+/*
+    we declare the function for the system calls
+ */
+static int setProcessTickets(struct thread *td,struct setProcessTickets_args *arg)
+{
+    //get value that we will set the process tickets
+    struct proc *Process = pfind(arg->pid);
+    
+    //if Process is NULL then there is an error. 
+    //so we have to return a -1
+    if(Process == NULL)
+    {
+        td -> td_retval[0] = -1;
+    }
+    else
+    {
+        Process -> tickets = arg -> tickets;
+        PROC_UNLOCK(Process);
+        td -> td_retval[0] = Process -> tickets;
+    }
+    return 0;
+}
+
+static int getProcessTickets(struct thread *td,struct getProcessTickets_args *arg)
+{
+    //get value that we will set the process tickets
+    struct proc *Process = pfind(arg->pid);
+    
+    //if Process is NULL then there is an error. 
+    //so we have to return a -1
+    if(Process == NULL)
+    {
+        td -> td_retval[0] = -1;
+    }
+    else
+    {
+        int NumberTickets = Process -> tickets;
+        PROC_UNLOCK(Process);
+        td -> td_retval[0] = NumberTickets;
+    }
+    return 0;
+}
+
+
+
+/*
+    we define the sysent datastructor for each system call
+ */
+static struct sysent setProcessTickets_sysent = {2,setProcessTickets};
+static struct sysent getProcessTickets_sysent = {1,getProcessTickets};
+
+
+/* 
+    we get the offset value for each of the system calls
+*/
+static int setProcessTickets_offset = NO_SYSCALL;
+static int getProcessTickets_offset = NO_SYSCALL;
+
+
+/*
+    we define the laod function for each of the system call
+    in order to use the KLD interface. 
+*/
+
+static int setProcessTickets_load(struct module *m, int what, void *arg)
+{
+    int error = 0;
+
+    switch (what) 
+    {
+        case MOD_LOAD:
+            printf("System call loaded at slot: %d\n", setProcessTickets_offset);
+            break;
+        case MOD_UNLOAD:
+            printf("System call unloaded from slot: %d\n", setProcessTickets_offset);
+            break;
+        default:
+            error = EINVAL;
+            break;
+      }
+      return error;
+}
+
+static int getProcessTickets_load(struct module *m, int what, void *arg)
+{
+    int error = 0;
+
+    switch (what) 
+    {
+        case MOD_LOAD:
+            printf("System call loaded at slot: %d\n", getProcessTickets_offset);
+            break;
+        case MOD_UNLOAD:
+            printf("System call unloaded from slot: %d\n", getProcessTickets_offset);
+            break;
+        default:
+            error = EINVAL;
+            break;
+      }
+      return error;
+}
+
+
+
+SYSCALL_MODULE(setProcessTickets,&setProcessTickets_offset,&setProcessTickets_sysent,setProcessTickets_load,NULL);
+SYSCALL_MODULE(getProcessTickets,&getProcessTickets_offset,&getProcessTickets_sysent,getProcessTickets_load,NULL);
+
+
+
