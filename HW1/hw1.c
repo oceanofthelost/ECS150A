@@ -34,6 +34,11 @@ struct getProcessTickets_args
     int pid; 
 };
 
+struct setLotteryMode_args
+{
+    int mode;
+};
+
 
 /*
     we declare the function for the system calls
@@ -78,6 +83,18 @@ static int getProcessTickets(struct thread *td,struct getProcessTickets_args *ar
     return 0;
 }
 
+static int setLotteryMode(struct thread *td, struct setLotteryMode_args *arg)
+{
+    lottery_mode = arg -> mode;
+    td -> td_retval[0] = lottery_mode;
+    return 0;
+}
+
+static int getLotteryMode(struct thread *td, void *arg)
+{
+    td -> td_retval[0] = lottery_mode;
+    return 0;
+}
 
 
 /*
@@ -85,14 +102,16 @@ static int getProcessTickets(struct thread *td,struct getProcessTickets_args *ar
  */
 static struct sysent setProcessTickets_sysent = {2,setProcessTickets};
 static struct sysent getProcessTickets_sysent = {1,getProcessTickets};
-
+static struct sysent setLotteryMode_sysent    = {1,setLotteryMode};
+static struct sysent getLotteryMode_sysent    = {0,getLotteryMode};
 
 /* 
     we get the offset value for each of the system calls
 */
 static int setProcessTickets_offset = NO_SYSCALL;
 static int getProcessTickets_offset = NO_SYSCALL;
-
+static int setLotteryMode_offset    = NO_SYSCALL;
+static int getLotteryMode_offset    = NO_SYSCALL;
 
 /*
     we define the laod function for each of the system call
@@ -137,10 +156,46 @@ static int getProcessTickets_load(struct module *m, int what, void *arg)
       return error;
 }
 
+static int setLotteryMode_load(struct module *m, int what, void *arg)
+{
+    int error = 0;
+
+    switch (what) 
+    {
+        case MOD_LOAD:
+            printf("System call loaded at slot: %d\n", setLotteryMode_offset);
+            break;
+        case MOD_UNLOAD:
+            printf("System call unloaded from slot: %d\n", setLotteryMode_offset);
+            break;
+        default:
+            error = EINVAL;
+            break;
+      }
+      return error;
+}
+
+static int getLotteryMode_load(struct module *m, int what, void *arg)
+{
+    int error = 0;
+
+    switch (what) 
+    {
+        case MOD_LOAD:
+            printf("System call loaded at slot: %d\n", getLotteryMode_offset);
+            break;
+        case MOD_UNLOAD:
+            printf("System call unloaded from slot: %d\n", getLotteryMode_offset);
+            break;
+        default:
+            error = EINVAL;
+            break;
+      }
+      return error;
+}
 
 
 SYSCALL_MODULE(setProcessTickets,&setProcessTickets_offset,&setProcessTickets_sysent,setProcessTickets_load,NULL);
 SYSCALL_MODULE(getProcessTickets,&getProcessTickets_offset,&getProcessTickets_sysent,getProcessTickets_load,NULL);
-
-
-
+SYSCALL_MODULE(setLotteryMode,&setLotteryMode_offset,&setLotteryMode_sysent,setLotteryMode_load,NULL);
+SYSCALL_MODULE(getLotteryMode,&getLotteryMode_offset,&getLotteryMode_sysent,getLotteryMode_load,NULL);
