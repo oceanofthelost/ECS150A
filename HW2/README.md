@@ -7,7 +7,9 @@ Files:
 
 	kern_fork.c: Added code to set the default tickets to 4 in fork_exit
 
-	kern_switch.c: Defined a global variable called lottery mode that determins the scheduling mode that we will be using. Also added two new types of scheduling, Lottery Schduling and Social Aware Scheduling. 
+	kern_switch.c: Defined a global variable called lottery mode that determins the scheduling 
+	mode that we will be using. Also added two new types of scheduling, Lottery Schduling and 
+	Social Aware Scheduling. 
 
 	Makefile: Used to compile hw1.c
 
