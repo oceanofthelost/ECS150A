@@ -845,42 +845,104 @@ SYSCTL_INT(_kern_sched, OID_AUTO, runq_fuzz, CTLFLAG_RW, &runq_fuzz, 0, "");
 /*
  * Find the highest priority process on the run queue.
  */
-struct kse *
-runq_choose(struct runq *rq)
+struct kse *runq_choose(struct runq *rq)
 {
+    struct kse* kse_ptr = NULL;
 	struct rqhead *rqh;
 	struct kse *ke;
 	int pri;
 
 	mtx_assert(&sched_lock, MA_OWNED);
-	while ((pri = runq_findbit(rq)) != -1) {
-		rqh = &rq->rq_queues[pri];
-#if defined(SMP) && defined(SCHED_4BSD)
-		/* fuzz == 1 is normal.. 0 or less are ignored */
-		if (runq_fuzz > 1) {
-			/*
-			 * In the first couple of entries, check if
-			 * there is one for our CPU as a preference.
-			 */
-			int count = runq_fuzz;
-			int cpu = PCPU_GET(cpuid);
-			struct kse *ke2;
-			ke2 = ke = TAILQ_FIRST(rqh);
+	while ((pri = runq_findbit(rq)) != -1) 
+    {
 
-			while (count-- && ke2) {
-				if (ke->ke_thread->td_lastcpu == cpu) {
-					ke = ke2;
-					break;
-				}
-				ke2 = TAILQ_NEXT(ke2, ke_procq);
-			}
-		} else 
-#endif
-			ke = TAILQ_FIRST(rqh);
-		KASSERT(ke != NULL, ("runq_choose: no proc on busy queue"));
-		CTR3(KTR_RUNQ,
-		    "runq_choose: pri=%d kse=%p rqh=%p", pri, ke, rqh);
-		return (ke);
+        //lottery scheduling is active
+        if((lottery_mode == 1) && (pri>=40 && pri<56))
+        {
+            int tickets = 0;
+
+            //we need to find all of the tickets that are in ques 44 to 56
+            for(int i = 40;i<56;i++)
+            {
+                rqh = &rq->rq_queues[i];
+                if(rqh != NULL)
+                {
+                    kse_ptr = TAILQ_FIRST(rqh);
+                    while(kse_ptr)
+                    {
+                        tickets += kse_ptr->ke_thread->td_proc->tickets;
+                        kse_ptr = TAILQ_NEXT(kse_ptr, ke_procq);
+                    }
+                }
+            }
+
+            //start processing dependonmg on the amount of tickets that we have
+            if(tickets > 0)
+            {
+                //makes it so we only have to iterate once through the runtime queue instead 
+                //of multiple times. 
+                int random_number = random() % tickets;
+                
+                for(int i = 40;i<56;i++)
+                {
+                    rqh = &rq->rq_queues[i];
+                    if(rqh != NULL)
+                    {
+                        kse_ptr = TAILQ_FIRST(rqh);
+                        while(kse_ptr)
+                        {
+
+                            random_number -= kse_ptr->ke_thread->td_proc->tickets;
+                            if(random_number < 0)
+                            {
+                                KASSERT(kse_ptr != NULL, ("runq_choose: no proc on busy queue"));
+                                CTR3(KTR_RUNQ,"runq_choose: pri=%d kse=%p rqh=%p", i, kse_ptr, rqh);
+                                return (kse_ptr);
+
+                            }
+                            kse_ptr = TAILQ_NEXT(kse_ptr, ke_procq);
+                        }
+                    }
+                }
+            }
+        }
+        //social info scheduling
+        else if((lottery_mode == 2) && (pri>=40 && pri<=56))
+        {
+        
+        }
+        else //default scheduling
+        {
+            rqh = &rq->rq_queues[pri];
+            #if defined(SMP) && defined(SCHED_4BSD)
+            /* fuzz == 1 is normal.. 0 or less are ignored */
+            if (runq_fuzz > 1) 
+            {
+                /*
+                 * In the first couple of entries, check if
+                 * there is one for our CPU as a preference.
+                 */
+                int count = runq_fuzz;
+                int cpu = PCPU_GET(cpuid);
+                struct kse *ke2;
+                ke2 = ke = TAILQ_FIRST(rqh);
+
+                while (count-- && ke2) {
+                    if (ke->ke_thread->td_lastcpu == cpu) {
+                        ke = ke2;
+                        break;
+                    }
+                    ke2 = TAILQ_NEXT(ke2, ke_procq);
+                }
+            } 
+            else 
+            #endif
+                ke = TAILQ_FIRST(rqh);
+            KASSERT(ke != NULL, ("runq_choose: no proc on busy queue"));
+            CTR3(KTR_RUNQ,
+                "runq_choose: pri=%d kse=%p rqh=%p", pri, ke, rqh);
+            return (ke);
+        }
 	}
 	CTR1(KTR_RUNQ, "runq_choose: idleproc pri=%d", pri);
 
