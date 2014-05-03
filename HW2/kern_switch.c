@@ -907,10 +907,12 @@ struct kse *runq_choose(struct runq *rq)
             }
         }
         //social info scheduling
+        /* not needed. Teacher decided that we did not have to do this part
         else if((lottery_mode == 2) && (pri>=40 && pri<=56))
         {
         
         }
+        */
         else //default scheduling
         {
             rqh = &rq->rq_queues[pri];
