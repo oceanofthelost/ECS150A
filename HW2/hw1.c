@@ -71,9 +71,19 @@ static int setProcessTickets(struct thread *td,struct setProcessTickets_args *ar
     }
     else
     {
-        Process -> tickets = arg -> tickets;
-        PROC_UNLOCK(Process);
-        td -> td_retval[0] = Process -> tickets;
+        //tickets are equat to or greater than 1
+        if(arg->tickets >= 1)
+        {
+            Process -> tickets = arg -> tickets;
+            PROC_UNLOCK(Process);
+            td -> td_retval[0] = Process -> tickets;
+        }
+        else //tickets were equalt to or less than 0
+        {
+            Process -> tickets = 1;
+            PROC_UNLOCK(Process);
+            td -> td_retval[0] = 1;
+        }
     }
     return 0;
 }
