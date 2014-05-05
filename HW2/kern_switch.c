@@ -856,50 +856,72 @@ struct kse *runq_choose(struct runq *rq)
 	while ((pri = runq_findbit(rq)) != -1) 
     {
 
-        //lottery scheduling is active
+        //lottery scheduling is active.
+        //We are also checking to make sure that the element process we have is 
+        //one that a priority that is in user space. If the priority is not in user psace we then have to go to 
+        //regular scheduling since the process is one that is a system process. 
         if((lottery_mode == 1) && (pri>=40 && pri<56))
         {
+            //set the ticket counter to 0
             int tickets = 0;
 
-            //we need to find all of the tickets that are in ques 44 to 56
+            //we need to find all of the tickets that are in queues 44 to 56
+            //which corospond to user level process
             for(int i = 40;i<56;i++)
             {
+                //we get the address of the first run time queue
                 rqh = &rq->rq_queues[i];
+                //makes sure the element is a valid. If its NULL then the queue is empty
                 if(rqh != NULL)
                 {
+                    //we get the elemenet of the first element in the runtime queue 
                     kse_ptr = TAILQ_FIRST(rqh);
+                    //we are going to iterate over the runtime queue until we reach NULL
                     while(kse_ptr)
                     {
+                        //finding the sum of all tickets of user level process
                         tickets += kse_ptr->ke_thread->td_proc->tickets;
+                        //incrament the pointer in the queue
                         kse_ptr = TAILQ_NEXT(kse_ptr, ke_procq);
                     }
                 }
             }
 
-            //start processing dependonmg on the amount of tickets that we have
+            //start processing dependonmg on the amount of tickets that we have.
+            //if we have zero tickets that means there are no process to process
             if(tickets > 0)
             {
-                //makes it so we only have to iterate once through the runtime queue instead 
-                //of multiple times. 
+                //uses ing the mod operator makes it so that we only have to iterate ov er the runtime queues
+                //once since the random number will only take a value from 0 to (# of tickets) - 1. This gaurntees 
+                //one iteration through the runtime queues
                 int random_number = random() % tickets;
                 
+                //we are going to interate over each of the runtime queues
                 for(int i = 40;i<56;i++)
                 {
+                    //will hold the address of the runtime queue
                     rqh = &rq->rq_queues[i];
+                    //makes sure runtime queue is not empty
                     if(rqh != NULL)
                     {
+                        //holds the first element of the runtime queue
                         kse_ptr = TAILQ_FIRST(rqh);
+                        //iterates over tghe runtime queue
                         while(kse_ptr)
                         {
-
+                            //we subtract the number of tickets that kse_ptr is pointing to 
+                            //from the total amount of tickets
                             random_number -= kse_ptr->ke_thread->td_proc->tickets;
+                            //if tickets is less than 0 we have then found the process we will schedule next. 
                             if(random_number < 0)
                             {
+                                //make it the process that we will run next on the CPU
                                 KASSERT(kse_ptr != NULL, ("runq_choose: no proc on busy queue"));
                                 CTR3(KTR_RUNQ,"runq_choose: pri=%d kse=%p rqh=%p", i, kse_ptr, rqh);
                                 return (kse_ptr);
 
                             }
+                            //iterate to the next element. 
                             kse_ptr = TAILQ_NEXT(kse_ptr, ke_procq);
                         }
                     }
@@ -913,7 +935,9 @@ struct kse *runq_choose(struct runq *rq)
         
         }
         */
-        else //default scheduling
+        //default scheduling will occure when the lottery mode is off 
+        //or the process has a priority that is not on the user level. 
+        else 
         {
             rqh = &rq->rq_queues[pri];
             #if defined(SMP) && defined(SCHED_4BSD)
