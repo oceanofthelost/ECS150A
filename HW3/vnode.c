@@ -254,12 +254,12 @@ static int  snoopfs_read(struct vop_read_args *ap);
  int snoopfs_read(ap) struct vop_read_args *ap;
  {
     /*build a vnode pointer from passed pointer*/
-    //struct vnode *v_ptr = ap->a_vp;
+    struct vnode *v_ptr = ap->a_vp;
     /*given in discussion slides*/
-    //struct snoopfs_node *xp = VP_TO_SNOOPFS(ap->a_vp);
-    //struct vnode  *lowervp = xp->snoopfs_lowervp;
+    struct snoopfs_node *xp = VP_TO_SNOOPFS(ap->a_vp);
+    struct vnode  *lowervp = xp->snoopfs_lowervp;
     /*get the inode structure of the file*/
-
+    struct inode *i_ptr = (struct inode*)(lowervp->v_data);
     /* display the information that HW3 requires. The format of what 
      * we are going to print is 
      * <Action Type>::<I-Node#>::<block#>::<#of bytes> <EoL> 
@@ -269,16 +269,16 @@ static int  snoopfs_read(struct vop_read_args *ap);
      * <Block#> is the number for the block we are using
      * <#of bytes> is the amount of bytes we read
      */
-    int Action_Type = 0;
-    struct ino_t I_Node_Number = (struct inode*)(lowervp-v_data)->i_number;
-    int Block_Number = (int)(ap->a_vp->v+mount->mnt_stat).f_bsize;
-    int Number_Of_Bytes = (int)ap->a_uio->uio_offset;
-    if((int)ap->a_uio->offset!=0)
+    //int Action_Type = 0;
+    //struct ino_t I_Node_Number = (struct inode*)(lowervp-v_data)->i_number
+    //if((int)ap->a_uio->uio_offset!=0)
     {
-      printf("%d::%d::%d::%d\n", Action_Type,I_Node_Number, Block_Number, Number_Of_Bytes;
+      printf("%d::%d::%d::%d\n",0,i_ptr->i_number,(int)(v_ptr->v_mount->mnt_stat).f_bsize, (int)ap->a_uio->uio_offset);
+      uprintf("%d::%d::%d::%d\n",0,i_ptr->i_number,(int)(v_ptr->v_mount->mnt_stat).f_bsize, (int)ap->a_uio->uio_offset);
     }
     return (snoopfs_bypass((struct vop_generic_args*)ap));
  }
+
 
 
 /*
@@ -1052,7 +1052,6 @@ static struct vnodeopv_entry_desc snoopfs_vnodeop_entries[] =
   /* Added for the read function*/
   { &vop_read_desc, (vop_t *) snoopfs_read },
   /*Added for the write function*/
-  { &vop_write_desc, (vop_t *) snoopfs_write },
 
   /* EZK added these */
   { &vop_ioctl_desc,		(vop_t *) snoopfs_ioctl },
