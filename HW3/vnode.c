@@ -246,41 +246,6 @@ static int	snoopfs_unlock(struct vop_unlock_args *ap);
 /* adding system call to snoopfs*/
 static int  snoopfs_read(struct vop_read_args *ap);
 
-
-/*
- *We are adding this function to intercept system reads. We 
- *print to the screen the required information. 
- */
- int snoopfs_read(ap) struct vop_read_args *ap;
- {
-    /*build a vnode pointer from passed pointer*/
-    struct vnode *v_ptr = ap->a_vp;
-    /*given in discussion slides*/
-    struct snoopfs_node *xp = VP_TO_SNOOPFS(ap->a_vp);
-    struct vnode  *lowervp = xp->snoopfs_lowervp;
-    /*get the inode structure of the file*/
-    struct inode *i_ptr = (struct inode*)(lowervp->v_data);
-    /* display the information that HW3 requires. The format of what 
-     * we are going to print is 
-     * <Action Type>::<I-Node#>::<block#>::<#of bytes> <EoL> 
-     * 
-     * <Action Type> is 0 for a read
-     * <I-Node#> is the number assigned to the given I-Node we are using 
-     * <Block#> is the number for the block we are using
-     * <#of bytes> is the amount of bytes we read
-     */
-    //int Action_Type = 0;
-    //struct ino_t I_Node_Number = (struct inode*)(lowervp-v_data)->i_number
-    //if((int)ap->a_uio->uio_offset!=0)
-    {
-      printf("%d::%d::%d::%d\n",0,i_ptr->i_number,(int)(v_ptr->v_mount->mnt_stat).f_bsize, (int)ap->a_uio->uio_offset);
-      uprintf("%d::%d::%d::%d\n",0,i_ptr->i_number,(int)(v_ptr->v_mount->mnt_stat).f_bsize, (int)ap->a_uio->uio_offset);
-    }
-    return (snoopfs_bypass((struct vop_generic_args*)ap));
- }
-
-
-
 /*
  * This is the 10-Apr-92 bypass routine.
  *    This version has been optimized for speed, throwing away some
@@ -1025,7 +990,35 @@ snoopfs_mmap(ap)
   return EINVAL;
 }
 
-
+/*
+ *We are adding this function to intercept system reads. We 
+ *print to the screen the required information. 
+ */
+ int snoopfs_read(ap) struct vop_read_args *ap;
+ {
+    /*build a vnode pointer from passed pointer*/
+    struct vnode *v_ptr = ap->a_vp;
+    /*given in discussion slides*/
+    struct snoopfs_node *xp = VP_TO_SNOOPFS(ap->a_vp);
+    struct vnode  *lowervp = xp->snoopfs_lowervp;
+    /*get the inode structure of the file*/
+    struct inode *i_ptr = (struct inode*)(lowervp->v_data);
+    /* display the information that HW3 requires. The format of what 
+     * we are going to print is 
+     * <Action Type>::<I-Node#>::<block#>::<#of bytes> <EoL> 
+     * 
+     * <Action Type> is 0 for a read
+     * <I-Node#> is the number assigned to the given I-Node we are using 
+     * <Block#> is the number for the block we are using
+     * <#of bytes> is the amount of bytes we read
+     */
+    
+    if((int)ap->a_uio->uio_offset!=0)
+    {
+      printf("%d::%d::%d::%d\n",0,i_ptr->i_number,(int)(v_ptr->v_mount->mnt_stat).f_bsize, (int)ap->a_uio->uio_offset);
+    }
+    return (snoopfs_bypass((struct vop_generic_args*)ap));
+ }
 
 /*
  * Global vfs data structures
@@ -1050,7 +1043,7 @@ static struct vnodeopv_entry_desc snoopfs_vnodeop_entries[] =
 
   /*HW 3 addions for system calls*/
   /* Added for the read function*/
-  { &vop_read_desc, (vop_t *) snoopfs_read },
+  
   /*Added for the write function*/
 
   /* EZK added these */
@@ -1060,6 +1053,7 @@ static struct vnodeopv_entry_desc snoopfs_vnodeop_entries[] =
 #endif /* HAVE_BMAP */
   /* KIRAN added this */
   { &vop_open_desc,		(vop_t *) snoopfs_open },
+  { &vop_read_desc, (vop_t *) snoopfs_read },
   {NULL, NULL}
 };
 
