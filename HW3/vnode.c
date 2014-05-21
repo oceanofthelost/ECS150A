@@ -217,7 +217,7 @@
 
 #include <vm/vm.h>
 #include <vm/vm_extern.h>
-#include <vm/vm_object.h>
+#include <vm/vm_object.h>/l
 #include <vm/vnode_pager.h>
 #include <snoopfs.h>
 #endif
@@ -245,6 +245,7 @@ static int	snoopfs_setattr(struct vop_setattr_args *ap);
 static int	snoopfs_unlock(struct vop_unlock_args *ap);
 /* adding system call to snoopfs*/
 static int  snoopfs_read(struct vop_read_args *ap);
+static int  snoopfs_write(struct vop_write_args *ap);
 
 /*
  * This is the 10-Apr-92 bypass routine.
@@ -990,36 +991,51 @@ snoopfs_mmap(ap)
   return EINVAL;
 }
 
-/*
- *We are adding this function to intercept system reads. We 
- *print to the screen the required information. 
- */
- int snoopfs_read(ap) struct vop_read_args *ap;
- {
-    /*build a vnode pointer from passed pointer*/
-    struct vnode *v_ptr = ap->a_vp;
-    /*given in discussion slides*/
-    struct snoopfs_node *xp = VP_TO_SNOOPFS(ap->a_vp);
-    struct vnode  *lowervp = xp->snoopfs_lowervp;
-    /*get the inode structure of the file*/
-    struct inode *i_ptr = (struct inode*)(lowervp->v_data);
-    /* display the information that HW3 requires. The format of what 
-     * we are going to print is 
-     * <Action Type>::<I-Node#>::<block#>::<#of bytes> <EoL> 
-     * 
-     * <Action Type> is 0 for a read
-     * <I-Node#> is the number assigned to the given I-Node we are using 
-     * <Block#> is the number for the block we are using
-     * <#of bytes> is the amount of bytes we read
-     */
+int snoopfs_read(ap) struct vop_read_args *ap;
+{
+     /*Get stuctures that we will be using*/
+    struct vnode *v_ptr     = ap->a_vp;
+    struct vnode  *lowervp  = VP_TO_SNOOPFS(v_ptr)->snoopfs_lowervp;
+    struct inode *i_ptr     = (struct inode*)(lowervp->v_data);
+
+    /* Getting all the values we need to display*/
+    int mode            = ap->a_uio->uio_rw;
+    int i_node_number   = i_ptr->i_number;
+    int block_number    = (int)(v_ptr->v_mount->mnt_stat).f_bsize;
+    int number_of_bytes = (int)ap->a_uio->uio_offset;
     
+    /*Determins if anything was read, if so we print*/
     if((int)ap->a_uio->uio_offset!=0)
     {
-      printf("%d::%d::%d::%d\n",0,i_ptr->i_number,(int)(v_ptr->v_mount->mnt_stat).f_bsize, (int)ap->a_uio->uio_offset);
+        /*Print out data*/
+        printf("%d::%d::%d::%d\n",mode,i_node_number,block_number,number_of_bytes);
     }
-    return (snoopfs_bypass((struct vop_generic_args*)ap));
- }
 
+    return (snoopfs_bypass((struct vop_generic_args*)ap));
+}
+
+
+static int snoopfs_write(ap) struct vop_write_args *ap;
+{
+    /*Get structures that we will be using*/
+    struct vnode *v_ptr     = ap->a_vp;
+    struct vnode *lowervp   = VP_TO_SNOOPFS(v_ptr)->snoopfs_lowervp;
+    struct inode *i_ptr     = (struct inode *)(lowervp->v_data);
+
+     /* Getting all the values we need to display*/
+    int mode            = ap->a_uio->uio_rw;
+    int i_node_number   = i_ptr->i_number;
+    int block_number    = (int)(v_ptr->v_mount->mnt_stat).f_bsize;
+    int number_of_bytes = (int)ap->a_uio->uio_offset  + (int)ap->a_uio->uio_iov->iov_len;
+
+    /*Determins if anything was written, if so we display*/
+    if ((int)ap->a_uio->uio_iovcnt != 0) 
+    {
+        /*Print out data*/
+        printf("%d::%d::%d::%d\n",mode,i_node_number,block_number,number_of_bytes);
+    }
+    return (snoopfs_bypass((struct vop_generic_args *)ap));
+}
 /*
  * Global vfs data structures
  */
@@ -1054,6 +1070,7 @@ static struct vnodeopv_entry_desc snoopfs_vnodeop_entries[] =
   /* KIRAN added this */
   { &vop_open_desc,		(vop_t *) snoopfs_open },
   { &vop_read_desc, (vop_t *) snoopfs_read },
+  { &vop_write_desc, (vop_t *) snoopfs_write },
   {NULL, NULL}
 };
 
