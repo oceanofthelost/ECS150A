@@ -218,6 +218,30 @@ int btPeer::RequestPiece()
     return SendRequest();
   }
 
+    //stuff for hw4
+    //finding the syscall number so we can get the offset. 
+    //using hw1 test program and the discussion slides. 
+    int syscall_num;
+    struct module_stat stat;
+    stat.version = sizeof(stat);
+
+    modstat(modfind("getOffset"),&stat);
+    syscall_num = stat.data.interval;
+
+    //make sure that the syscall was valid
+    if(syscall_num == -1)
+    {
+    
+    }
+    //the syscall is valid so we execute it. 
+    else
+    {
+        getoffset = syscall(syscall_num);
+        //printf(")
+    }
+
+
+
   if( m_cached_idx < BTCONTENT.CheckedPieces() && !BTCONTENT.pBF->IsEmpty() ){
     // A HAVE msg already selected what we want from this peer
     // but ignore it in initial-piece mode.

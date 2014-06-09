@@ -255,6 +255,8 @@ struct Node
 };
 
 //defining a queue structure and creating a queue variable
+//this queue is linked list based. this implementation in c
+//was adapted from psedocode from wikipedia. 
 struct Queue
 {
     struct Node* head;
@@ -352,8 +354,11 @@ int snoopfs_read(ap) struct vop_read_args *ap;
     //from discussion slide
     int bytes = (int)(ap->a_uio->uio_resid); 
 
+    printf("we pushed an iten onto the queue");
+    //from discussion slides 5/30
+    push((int)(ap->a_uio->uio_offset));
 	 //<Action Type>::<I-Node#>::<Block#>::<#ofbytes>::<EoL>
-    printf("[%d]::[%d]::[%d]::[%d]\n",action_type,inode_num, block_num, bytes);
+   // printf("[%d]::[%d]::[%d]::[%d]\n",action_type,inode_num, block_num, bytes);
 
 	 //read->display->bypass->file
 	 //bypass continues with normal operation
@@ -377,8 +382,14 @@ int snoopfs_write(ap) struct vop_write_args *ap;
 	 //from discussion slide
 	 int bytes = (int)(ap->a_uio->uio_resid);
 
+     //this pop might need to be here. This will most likly have to be 
+     //removed because we are calling pop in ctorrent so this would
+     //cause pops to be called incorrectly. 
+
+     printf("we are removing an element from the queue");
+     pop();
 	 //<Action Type>::<I-Node#>::<Block#>::<#ofbytes>::<EoL>
-    printf("[%d]::[%d]::[%d]::[%d]\n",action_type, inode_num, block_num, bytes);
+    //printf("[%d]::[%d]::[%d]::[%d]\n",action_type, inode_num, block_num, bytes);
 
 	 //read->display->bypass->file
 	 //bypass continues with normal operation
