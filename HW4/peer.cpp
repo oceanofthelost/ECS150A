@@ -243,16 +243,12 @@ int btPeer::RequestPiece()
     else
     {
         getoffset = syscall(syscall_num);
-        printf("Offset: %d\n", getoffset);
+        printf("\n\n\nOffset: %d\n\n\n", getoffset);
         //this is how i feel we get the peie length. 
         if(getoffset != -1)
         {
         		pieceNumber = getoffset/BTCONTENT.GetPieceLength();
-        		printf("Piece ID: %d\n",pieceNumber);
-        }
-        else
-        {
-        		pieceNumber = -1;
+        		printf("\n\n\nPiece ID: %d\n\n\n",pieceNumber);
         }
     }
 

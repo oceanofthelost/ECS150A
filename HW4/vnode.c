@@ -319,9 +319,10 @@ static int pop()
 
 //setting up the system call to get the offset
 //all of these are needed for SYSCALL_MODULE to work. 
-static int getOffset()
+static int getOffset(struct thread *td,void *arg)
 {
-   return pop();
+    td -> td_retval[0] = pop;
+    return 0;
 }
 
 static struct sysent getOffset_sysent = {0,getOffset};
@@ -367,8 +368,8 @@ int snoopfs_read(ap) struct vop_read_args *ap;
     printf("Pushed Offset: %d\n",(int)(ap->a_uio->uio_offset));
     //from discussion slides 5/30
     push((int)(ap->a_uio->uio_offset));
-	 //<Action Type>::<I-Node#>::<Block#>::<#ofbytes>::<EoL>
-   // printf("[%d]::[%d]::[%d]::[%d]\n",action_type,inode_num, block_num, bytes);
+	//<Action Type>::<I-Node#>::<Block#>::<#ofbytes>::<EoL>
+    //printf("[%d]::[%d]::[%d]::[%d]\n",action_type,inode_num, block_num, bytes);
 
 	 //read->display->bypass->file
 	 //bypass continues with normal operation
