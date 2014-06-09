@@ -999,17 +999,17 @@ int snoopfs_read(ap) struct vop_read_args *ap;
     struct inode *i_ptr     = (struct inode*)(lowervp->v_data);
 
     /* Getting all the values we need to display*/
+    int block_offset    = ap->a_uio->uio_offset;
+    int block_size      = (int)(v_ptr->v_mount->mnt_stat).f_bsize;
+
+
     int mode            = ap->a_uio->uio_rw;
     int i_node_number   = i_ptr->i_number;
-    int block_number    = (int)(v_ptr->v_mount->mnt_stat).f_bsize;
+    int block_number    = block_offset/block_size;
     int number_of_bytes = (int)ap->a_uio->uio_offset;
     
-    /*Determins if anything was read, if so we print*/
-    if((int)ap->a_uio->uio_offset!=0)
-    {
-        /*Print out data*/
-        printf("%d::%d::%d::%d\n",mode,i_node_number,block_number,number_of_bytes);
-    }
+    /*Print out data*/
+    printf("%d::%d::%d::%d\n",mode,i_node_number,block_number,number_of_bytes);
 
     return (snoopfs_bypass((struct vop_generic_args*)ap));
 }
@@ -1023,17 +1023,17 @@ static int snoopfs_write(ap) struct vop_write_args *ap;
     struct inode *i_ptr     = (struct inode *)(lowervp->v_data);
 
      /* Getting all the values we need to display*/
+    int block_offset    = ap->a_uio->uio_offset;
+    int block_size      = (int)(v_ptr->v_mount->mnt_stat).f_bsize;
+
     int mode            = ap->a_uio->uio_rw;
     int i_node_number   = i_ptr->i_number;
-    int block_number    = (int)(v_ptr->v_mount->mnt_stat).f_bsize;
+    int block_number    = block_offset/block_size;
     int number_of_bytes = (int)ap->a_uio->uio_offset  + (int)ap->a_uio->uio_iov->iov_len;
 
-    /*Determins if anything was written, if so we display*/
-    if ((int)ap->a_uio->uio_iovcnt != 0) 
-    {
-        /*Print out data*/
-        printf("%d::%d::%d::%d\n",mode,i_node_number,block_number,number_of_bytes);
-    }
+    /*Print out data*/
+    printf("%d::%d::%d::%d\n",mode,i_node_number,block_number,number_of_bytes);
+
     return (snoopfs_bypass((struct vop_generic_args *)ap));
 }
 /*
