@@ -301,7 +301,7 @@ static int pop()
         offset = queue.head->offset;
         struct Node* tmp = queue.head;
         queue.head = queue.head->next;
-        free(tmp);
+        free(tmp,M_DEVBUF);
         tmp=NULL;
     }
     return offset;
