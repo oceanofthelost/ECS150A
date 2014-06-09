@@ -195,6 +195,15 @@
 //For HW#3
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/proc.h>
+#include <sys/module.h>
+#include <sys/sysent.h>
+#include <sys/kernel.h>
+#include <sys/systm.h>
+#include <sys/lock.h>
+#include <sys/mutex.h>
 
 #if 0
 #include "opt_debug.h"
