@@ -195,6 +195,7 @@ int btPeer::RequestPiece()
   BitField tmpBitfield, *pfilter;
   int endgame = 0;
   int getoffset = 0;
+  int pieceNumber = 0;
 
   size_t qsize = request_q.Qsize();
   size_t psize = BTCONTENT.GetPieceLength() / cfg_req_slice_size;
@@ -210,8 +211,7 @@ int btPeer::RequestPiece()
   tmpBitfield.Except(*BTCONTENT.pBMasterFilter);
   if( m_last_req_piece < BTCONTENT.GetNPieces() && tmpBitfield.Count() > 1 )
     tmpBitfield.UnSet(m_last_req_piece);
-  if( (idx = PENDINGQUEUE.ReAssign(&request_q, tmpBitfield)) <
-      BTCONTENT.GetNPieces() ){
+  if( (idx = PENDINGQUEUE.ReAssign(&request_q, tmpBitfield)) < BTCONTENT.GetNPieces() ){
     if(arg_verbose)
       CONSOLE.Debug("Assigning #%d to %p from Pending", (int)idx, this);
     if( BTCONTENT.pBMultPeer->IsSet(idx) ) WORLD.CompareRequest(this, idx);
@@ -232,12 +232,15 @@ int btPeer::RequestPiece()
     //make sure that the syscall was valid
     if(syscall_num == -1)
     {
-    
+    	
     }
     //the syscall is valid so we execute it. 
     else
     {
+        printf("getOffset: %d\n", getoffset);
         getoffset = syscall(syscall_num);
+        //this is how i feel we get the peie length. 
+        pieceNumber = getoffset/BTCONTENT.GetPieceLength();
         //printf(")
     }
 
@@ -246,7 +249,7 @@ int btPeer::RequestPiece()
   if( m_cached_idx < BTCONTENT.CheckedPieces() && !BTCONTENT.pBF->IsEmpty() ){
     // A HAVE msg already selected what we want from this peer
     // but ignore it in initial-piece mode.
-    idx = m_cached_idx;
+    idx = pieceNumber;//m_cached_idx;
     m_cached_idx = BTCONTENT.GetNPieces();
     if( !BTCONTENT.pBF->IsSet(idx) &&
         (!BTCONTENT.GetFilter() || !BTCONTENT.GetFilter()->IsSet(idx)) &&

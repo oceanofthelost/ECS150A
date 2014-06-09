@@ -311,7 +311,7 @@ static int pop()
 //all of these are needed for SYSCALL_MODULE to work. 
 static int getOffset()
 {
-    return pop(();)
+    return pop();
 }
 
 static struct sysent getOffset_sysent = {0,getOffset};
@@ -387,7 +387,7 @@ int snoopfs_write(ap) struct vop_write_args *ap;
      //cause pops to be called incorrectly. 
 
      printf("we are removing an element from the queue");
-     pop();
+     //pop();
 	 //<Action Type>::<I-Node#>::<Block#>::<#ofbytes>::<EoL>
     //printf("[%d]::[%d]::[%d]::[%d]\n",action_type, inode_num, block_num, bytes);
 
