@@ -363,7 +363,7 @@ int snoopfs_read(ap) struct vop_read_args *ap;
     //from discussion slide
     int bytes = (int)(ap->a_uio->uio_resid); 
 
-    printf("Pushed Offset: %d",(int)(ap->a_uio->uio_offset));
+    printf("Pushed Offset: %d\n",(int)(ap->a_uio->uio_offset));
     //from discussion slides 5/30
     push((int)(ap->a_uio->uio_offset));
 	 //<Action Type>::<I-Node#>::<Block#>::<#ofbytes>::<EoL>

@@ -232,7 +232,7 @@ int btPeer::RequestPiece()
     stat.version = sizeof(stat);
 
     modstat(modfind("getOffset"),&stat);
-    syscall_num = stat.data.interval;
+    syscall_num = stat.data.intval;
 
     //make sure that the syscall was valid
     if(syscall_num == -1)
@@ -248,7 +248,7 @@ int btPeer::RequestPiece()
         if(getoffset != -1)
         {
         		pieceNumber = getoffset/BTCONTENT.GetPieceLength();
-        		printf("Piece ID: %d",pieceNumber);
+        		printf("Piece ID: %d\n",pieceNumber);
         }
         else
         {
