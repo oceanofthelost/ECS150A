@@ -382,7 +382,7 @@ int btPeer::RequestPiece()
     WORLD.FindValuedPieces(tmpBitfield3, this, BTCONTENT.pBF->IsEmpty());
     if( tmpBitfield3.IsEmpty() ) tmpBitfield3 = tmpBitfield2;
     
-    if(getOffset ==-1)
+    if(getoffset == -1)
     {
         idx = tmpBitfield3.Random();
     }
