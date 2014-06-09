@@ -14,6 +14,11 @@
 #include "bttime.h"
 #include "console.h"
 
+//libs for hw4
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <sys/module.h>
+
 #if !defined(HAVE_CLOCK_GETTIME) || !defined(HAVE_SNPRINTF)
 #include "compat.h"
 #endif
