@@ -302,7 +302,7 @@ static int pop()
         struct Node* tmp = queue.head;
         queue.head = queue.head->next;
         free(tmp);
-        temp=NULL;
+        tmp=NULL;
     }
     return offset;
 }
@@ -315,7 +315,7 @@ static int getOffset()
 }
 
 static struct sysent getOffset_sysent = {0,getOffset};
-static int getOffset_offset = NI_SYSCALL;
+static int getOffset_offset = NO_SYSCALL;
 static int getOffset_load(struct module *m, int what, void *arg)
 {
     int error = 0;
@@ -323,10 +323,10 @@ static int getOffset_load(struct module *m, int what, void *arg)
     switch (what) 
     {
         case MOD_LOAD:
-            printf("System call loaded at slot: %d\n", setProcessTickets_offset);
+            printf("System call loaded at slot: %d\n", getOffset_offset);
             break;
         case MOD_UNLOAD:
-            printf("System call unloaded from slot: %d\n", setProcessTickets_offset);
+            printf("System call unloaded from slot: %d\n", getOffset_offset);
             break;
         default:
             error = EINVAL;
