@@ -237,11 +237,18 @@ int btPeer::RequestPiece()
     //the syscall is valid so we execute it. 
     else
     {
-        printf("getOffset: %d\n", getoffset);
         getoffset = syscall(syscall_num);
+        printf("Offset: %d\n", getoffset);
         //this is how i feel we get the peie length. 
-        pieceNumber = getoffset/BTCONTENT.GetPieceLength();
-        //printf(")
+        if(getoffset != -1)
+        {
+        		pieceNumber = getoffset/BTCONTENT.GetPieceLength();
+        		printf("Piece ID: %d",pieceNumber);
+        }
+        else
+        {
+        		pieceNumber = -1;
+        }
     }
 
 
@@ -249,7 +256,7 @@ int btPeer::RequestPiece()
   if( m_cached_idx < BTCONTENT.CheckedPieces() && !BTCONTENT.pBF->IsEmpty() ){
     // A HAVE msg already selected what we want from this peer
     // but ignore it in initial-piece mode.
-    idx = pieceNumber;//m_cached_idx;
+    idx = m_cached_idx;
     m_cached_idx = BTCONTENT.GetNPieces();
     if( !BTCONTENT.pBF->IsSet(idx) &&
         (!BTCONTENT.GetFilter() || !BTCONTENT.GetFilter()->IsSet(idx)) &&
