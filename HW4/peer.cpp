@@ -194,6 +194,7 @@ int btPeer::RequestPiece()
   size_t idx;
   BitField tmpBitfield, *pfilter;
   int endgame = 0;
+  int getoffset = 0;
 
   size_t qsize = request_q.Qsize();
   size_t psize = BTCONTENT.GetPieceLength() / cfg_req_slice_size;
