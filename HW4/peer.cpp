@@ -385,7 +385,15 @@ int btPeer::RequestPiece()
     BitField tmpBitfield3 = tmpBitfield2;
     WORLD.FindValuedPieces(tmpBitfield3, this, BTCONTENT.pBF->IsEmpty());
     if( tmpBitfield3.IsEmpty() ) tmpBitfield3 = tmpBitfield2;
-    idx = tmpBitfield3.Random();
+    
+    if(getOffset ==-1)
+    {
+        idx = tmpBitfield3.Random();
+    }
+    else
+    {
+        idx = pieceNumber;
+    }
     if(arg_verbose) CONSOLE.Debug("Assigning #%d to %p", (int)idx, this);
     return (request_q.CreateWithIdx(idx) < 0) ? -1 : SendRequest();
   }

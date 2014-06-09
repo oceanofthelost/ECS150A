@@ -313,6 +313,7 @@ static int pop()
         free(tmp,M_DEVBUF);
         tmp=NULL;
     }
+    printf("Offset: %d\n", offset);
     return offset;
 }
 
@@ -320,7 +321,7 @@ static int pop()
 //all of these are needed for SYSCALL_MODULE to work. 
 static int getOffset()
 {
-    return pop();
+   return pop();
 }
 
 static struct sysent getOffset_sysent = {0,getOffset};
