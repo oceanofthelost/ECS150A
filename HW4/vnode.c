@@ -313,7 +313,7 @@ static int dequeue()
      	
 		if(front == NULL)
         	rear = NULL;
-		printf("Offset is being dequeued: %d\n", offset);
+		printf("Offset is dequeued: %d\n", offset);
   	}
   	
   	return offset;
@@ -367,7 +367,7 @@ int snoopfs_read(ap) struct vop_read_args *ap;
     //from discussion slide
     int bytes = (int)(ap->a_uio->uio_resid); 
 
-    printf("Offset is being enqueued: %d\n",(int)(ap->a_uio->uio_offset));
+    printf("Offset is queued: %d\n",(int)(ap->a_uio->uio_offset));
     //from discussion slides 5/30
     enqueue((int)(ap->a_uio->uio_offset));
 	//<Action Type>::<I-Node#>::<Block#>::<#ofbytes>::<EoL>
