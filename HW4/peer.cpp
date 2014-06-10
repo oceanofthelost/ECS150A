@@ -194,7 +194,7 @@ int btPeer::SetLocal(unsigned char s)
   return stream.Send_State(s);
 }
 
- int pieceArray[10] = {-1};
+  int pieceArray[20] = {-1};
   int pieceIndex = 0;
   bool pieceDone = false;
 
@@ -400,7 +400,7 @@ int btPeer::RequestPiece()
     
     if(getoffset == -1)
     {
-		 printf("offset is -1 and idx is being assigned tmpBitfield3.Random()\n");
+		 printf("Offset is -1 and idx is being assigned tmpBitfield3.Random()\n");
         idx = tmpBitfield3.Random();
 		  pieceIndex = 0;
 		printf("pieceIndex: %d\n", pieceIndex);
@@ -408,11 +408,11 @@ int btPeer::RequestPiece()
     else
     {
 			if(pieceDone == false){
-		 		printf("offset is not -1 and idx gets piece number %d \n", pieceNumber );
+		 		printf("Offset is not -1 and idx gets piece number %d \n", pieceNumber );
        		idx = pieceNumber;
 			}
 			else{
-				printf("piece already requested\n");
+				printf("Piece already requested\n");
 				idx = tmpBitfield3.Random();
 			}
     }
