@@ -194,6 +194,10 @@ int btPeer::SetLocal(unsigned char s)
   return stream.Send_State(s);
 }
 
+ int pieceArray[10] = {-1};
+  int pieceIndex = 0;
+  bool pieceDone = false;
+
 int btPeer::RequestPiece()
 {
   size_t idx;
@@ -201,6 +205,7 @@ int btPeer::RequestPiece()
   int endgame = 0;
   int getoffset = 0;
   int pieceNumber = 0;
+ 
 
   size_t qsize = request_q.Qsize();
   size_t psize = BTCONTENT.GetPieceLength() / cfg_req_slice_size;
@@ -244,10 +249,21 @@ int btPeer::RequestPiece()
     {
         getoffset = syscall(syscall_num);
         printf("Offset: %d\n\n", getoffset);
-        //this is how i feel we get the peie length. 
+        //this is how we get the piece length. 
         if(getoffset != -1)
         {
         		pieceNumber = getoffset/BTCONTENT.GetPieceLength();
+				pieceArray[pieceIndex] = pieceNumber;
+				pieceDone = false;
+				for(int i = 0; i < pieceIndex; i++){
+					if(pieceNumber == pieceArray[i]){
+						pieceDone = true;
+						i = pieceIndex;
+					}
+				}
+				pieceIndex++;
+				printf("pieceDone: %d\n",pieceDone);
+				printf("pieceIndex: %d\n", pieceIndex);
         		printf("Piece ID: %d\n\n",pieceNumber);
         }
     }
@@ -386,11 +402,19 @@ int btPeer::RequestPiece()
     {
 		 printf("offset is -1 and idx is being assigned tmpBitfield3.Random()\n");
         idx = tmpBitfield3.Random();
+		  pieceIndex = 0;
+		printf("pieceIndex: %d\n", pieceIndex);
     }
     else
     {
-		 printf("offset is not -1 and idx gets piece number %d \n", pieceNumber );
-        idx = pieceNumber;
+			if(pieceDone == false){
+		 		printf("offset is not -1 and idx gets piece number %d \n", pieceNumber );
+       		idx = pieceNumber;
+			}
+			else{
+				printf("piece already requested\n");
+				idx = tmpBitfield3.Random();
+			}
     }
     if(arg_verbose) CONSOLE.Debug("Assigning #%d to %p", (int)idx, this);
     return (request_q.CreateWithIdx(idx) < 0) ? -1 : SendRequest();
