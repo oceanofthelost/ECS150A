@@ -248,7 +248,7 @@ int btPeer::RequestPiece()
     else
     {
         getoffset = syscall(syscall_num);
-        printf("Offset: %d\n\n", getoffset);
+        printf("Offset from queue: %d\n\n", getoffset);
         //this is how we get the piece length. 
         if(getoffset != -1)
         {
@@ -262,8 +262,7 @@ int btPeer::RequestPiece()
 					}
 				}
 				pieceIndex++;
-				printf("pieceDone: %d\n",pieceDone);
-				printf("pieceIndex: %d\n", pieceIndex);
+				
         		printf("Piece ID: %d\n\n",pieceNumber);
         }
     }
@@ -400,20 +399,19 @@ int btPeer::RequestPiece()
     
     if(getoffset == -1)
     {
-		 printf("Offset is -1 and idx is being assigned tmpBitfield3.Random()\n");
+		 printf("Offset is %d\n", getoffset);
         idx = tmpBitfield3.Random();
-		  pieceIndex = 0;
-		printf("pieceIndex: %d\n", pieceIndex);
+		 pieceIndex = 0;
     }
     else
     {
 			if(pieceDone == false){
-		 		printf("Offset is not -1 and idx gets piece number %d \n", pieceNumber );
+		 		printf("Offset is %d, piece number %d \n", getoffset, pieceNumber );
        		idx = pieceNumber;
 			}
 			else{
 				printf("Piece already requested\n");
-				idx = tmpBitfield3.Random();
+				//idx = tmpBitfield3.Random();
 			}
     }
     if(arg_verbose) CONSOLE.Debug("Assigning #%d to %p", (int)idx, this);

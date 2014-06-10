@@ -31,7 +31,7 @@ main
     {
 		int ran = rand();
       fseek(target, ran, SEEK_SET);
-		printf("tr.c random number : %d\n", ran);
+		printf("tr.c offset: %d\n", ran);
       fscanf(target, "%d", &value);
       if (i % 100 == 0)
 	{
