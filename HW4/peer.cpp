@@ -384,10 +384,12 @@ int btPeer::RequestPiece()
     
     if(getoffset == -1)
     {
+		 printf("offset is -1 and idx is being assigned tmpBitfield3.Random()\n");
         idx = tmpBitfield3.Random();
     }
     else
     {
+		 printf("offset is not -1 and idx gets piece number %d \n", pieceNumber );
         idx = pieceNumber;
     }
     if(arg_verbose) CONSOLE.Debug("Assigning #%d to %p", (int)idx, this);
