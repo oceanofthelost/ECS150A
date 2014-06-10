@@ -286,7 +286,7 @@ static void push(int offset)
     tmp->next = NULL;
 
     //adds the offset to the queue. 
-    if(!queue.head) //queue is empty so we setit up
+    if(!queue.head) //queue is empty so we set it up
     {
         queue.tail = tmp;
         queue.head = queue.tail;
