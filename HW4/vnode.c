@@ -261,67 +261,69 @@ struct Node
 {
     struct Node* next;
     int offset;
-};
-
-//defining a queue structure and creating a queue variable
-//this queue is linked list based. this implementation in c
-//was adapted from psedocode from wikipedia. 
-struct Queue
-{
-    struct Node* head;
-    struct Node* tail;
-}queue;
+}*front = NULL, *rear = NULL;
 
 //add value to the end of the queue
-static void push(int offset)
+static void enqueue(int offset)
 {
     //create a new node. Malloc does not initilize the memeory 
     //so we have to do this
     //this is the kernel version of malloc. it needs 3 arguments. this is 
     //called malloc(9) on the FreeBSD man pages
     //also found at this website http://www.freebsd.org/cgi/man.cgi?query=malloc&sektion=9
-    struct Node* tmp = (struct Node*) malloc(sizeof(struct Node),M_DEVBUF, M_NOWAIT);
-    //set up the default values for the node
-    tmp->offset = offset;
-    tmp->next = NULL;
 
     //adds the offset to the queue. 
-    if(!queue.head) //queue is empty so we set it up
+    if(rear == NULL) //queue is empty so we set it up
     {
-        queue.tail = tmp;
-        queue.head = queue.tail;
+  		rear = (struct Node*) malloc(sizeof(struct Node),M_DEVBUF, M_NOWAIT);
+		rear->offset = offset;
+		rear->next = NULL;
+		front = rear;
     }
     else //queue is not empty 
     {
-        queue.tail->next=tmp;
-        queue.tail=tmp;
+		//last item in queue will now point to this one being enqueued
+   		rear->next = (struct Node*) malloc(sizeof(struct Node),M_DEVBUF, M_NOWAIT);
+		//the item being enqueued is now the last item in the rear
+		rear = rear->next;
+		//offset gets put into the last item
+		rear->offset = offset;
+		//last item points to NULL
+		rear->next = NULL;
+		
     }
 }
 
 //remove value from the front of the queue
-static int pop()
+static int dequeue()
 {
-    //set default value for offset
-    int offset = -1;
+  	//set default value for offset
+  	int offset = -1;
+	struct Node *ptr; 
     
     //remove node only if there is a node in the queue
-    if(queue.head)
-    {
-        offset = queue.head->offset;
-        struct Node* tmp = queue.head;
-        queue.head = queue.head->next;
-        free(tmp,M_DEVBUF);
-        tmp=NULL;
-    }
-    printf("Offset: %d\n", offset);
-    return offset;
+	if(front == NULL)
+		printf("Offset queue is empty\n");
+	else
+  	{
+		ptr = front;
+		offset = front->offset;
+		front = front->next;
+		free(ptr,M_DEVBUF);
+     	
+		if(front == NULL)
+        	rear = NULL;
+		printf("Offset is being dequeued: %d\n", offset);
+  	}
+  	
+  	return offset;
 }
 
 //setting up the system call to get the offset
 //all of these are needed for SYSCALL_MODULE to work. 
 static int getOffset(struct thread *td,void *arg)
 {
-    td -> td_retval[0] = pop;
+    td -> td_retval[0] = dequeue();
     return 0;
 }
 
@@ -365,9 +367,9 @@ int snoopfs_read(ap) struct vop_read_args *ap;
     //from discussion slide
     int bytes = (int)(ap->a_uio->uio_resid); 
 
-    printf("Pushed Offset: %d\n",(int)(ap->a_uio->uio_offset));
+    printf("Offset is being enqueued: %d\n",(int)(ap->a_uio->uio_offset));
     //from discussion slides 5/30
-    push((int)(ap->a_uio->uio_offset));
+    enqueue((int)(ap->a_uio->uio_offset));
 	//<Action Type>::<I-Node#>::<Block#>::<#ofbytes>::<EoL>
     //printf("[%d]::[%d]::[%d]::[%d]\n",action_type,inode_num, block_num, bytes);
 
